@@ -104,6 +104,32 @@ const productSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', productSchema);
 
 
+//ebd product schema
+
+// Create User model
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  password: String
+});
+
+const User = mongoose.model('User', userSchema);
+
+
+// Create Brand model
+const brandSchema = new mongoose.Schema({
+  brandname: String,
+  brandimage:String,
+  categories: String,
+  subcategories:[String],
+
+
+});
+
+const Brand = mongoose.model('Brand', brandSchema);
+
+
+
 
 //shop schema
 const shopSchema = new mongoose.Schema({
@@ -188,31 +214,6 @@ const shopSchema = new mongoose.Schema({
 const Shop = mongoose.model('Shop', shopSchema);
 
 
-//ebd product schema
-
-// Create User model
-const userSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  password: String
-});
-
-const User = mongoose.model('User', userSchema);
-
-
-// Create Brand model
-const brandSchema = new mongoose.Schema({
-  brandname: String,
-  brandimage:String,
-  categories: String,
-  subcategories:[String],
-
-
-});
-
-const Brand = mongoose.model('Brand', brandSchema);
-
-
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -220,7 +221,7 @@ app.use(bodyParser.json());
 
 
 app.get('/',(req,res)=>{
-  res.send('Vercel backend app deployment succeeded')
+  res.send('Vercel backend app creation')
 })
 
 app.post('/addbrand', async (req, res) => {
@@ -587,80 +588,19 @@ app.get('/userdata/:email', async(req,res)=>{
 
 
 
-// Middleware
-app.use(bodyParser.json());
-
-// Route for adding an item to the cart
-
-
-
-
-
-//manufacturer schema
-const manufacturerSchema = new mongoose.Schema({
-  username:String,
-  email:String,
-  password:String,
-  picture:String,
-  location:String,
-  postaladdress:String,
-  physicaladdress:String,
-  bussinesstype:String,
-  category:[String],
-  
-});
-
-
-
-
-const Manufacturer = mongoose.model('Manufacturer', manufacturerSchema);
-
-
-// Register manufacturer route
-app.post('/manufregister', async (req, res) => {
-  try {
-    const { username, email, password,picture,location,postaladdress,physicaladdress,bussinesstype,category } = req.body;
-    const manufacturer = new Manufacturer({ username, email, password,picture,location,postaladdress,physicaladdress,bussinesstype,category });
-    await manufacturer.save();
-    res.status(200).json({ message: 'Manufacturer registered successfully' });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Failed to register Manufacturer' });
-  }
-});
-
-
-
-// Login manufacturer route
-app.post('/manuflogin', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const manufacturer = await User.findOne({ email, password });
-    if (!manufacturer) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-    res.status(200).json({ message: 'Login successful' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to login' });
-  }
-});
-
-
-
-//fetch all the manufacturers
-//fetch users
-app.get('/manufdata', async(req, res)=> {
+//get all sellers
+//fetch all products
+app.get('/sellers', async(req, res)=>{
   try{
-    const manufacturer = await Manufacturer.find({});
-    res.status(200).json(manufacturer);
+    const seller = await Shop.find({});
+    res.status(200).json(seller);
 
-  }catch(error){
-    console.log(error);
-    res.status(500).json({error:'Data not fetched'})
   }
-
-});
+  catch(error){
+    console.log(error);
+    res.status(500).json({error:'product not found'})
+  }
+})
 
 
 
@@ -687,19 +627,6 @@ app.get('/productlistcategoryandseller/:sellername/:category', async (req, res) 
     res.status(500).json({ message: error.message });
   }
 });
-
-//get sellers
-app.get('/sellers', async(req, res)=>{
-  try{
-    const seller = await Shop.find({});
-    res.status(200).json(seller);
-
-  }
-  catch(error){
-    console.log(error);
-    res.status(500).json({error:'product not found'})
-  }
-})
 
 
 
