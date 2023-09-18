@@ -104,6 +104,90 @@ const productSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', productSchema);
 
 
+
+//shop schema
+const shopSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, "Please enter your shop name!"],
+  },
+  email: {
+    type: String,
+    required: [true, "Please enter your shop email address"],
+  },
+  password: {
+    type: String,
+    required: [true, "Please enter your password"],
+    minLength: [6, "Password should be greater than 6 characters"],
+    select: false,
+  },
+  exchangeRate: {
+    type: Number,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  phoneNumber: {
+    type: Number,
+    required: true,
+  },
+  role: {
+    type: String,
+    default: "Seller",
+  },
+  avatar: {
+    public_id: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
+  zipCode: {
+    type: Number,
+    required: true,
+  },
+  withdrawMethod: {
+    type: Object,
+  },
+  availableBalance: {
+    type: Number,
+    default: 0,
+  },
+  transections: [
+    {
+      amount: {
+        type: Number,
+        required: true,
+      },
+      status: {
+        type: String,
+        default: "Processing",
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now(),
+      },
+      updatedAt: {
+        type: Date,
+      },
+    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
+  resetPasswordToken: String,
+  resetPasswordTime: Date,
+});
+
+
+const Shop = mongoose.model('Shop', shopSchema);
+
+
 //ebd product schema
 
 // Create User model
@@ -499,127 +583,15 @@ app.get('/userdata/:email', async(req,res)=>{
 
 
 
-const cartItemSchema = new mongoose.Schema({
-  itemName: {
-    type: String,
-    required: true,
-  },
-  itemImage: {
-    type: String,
-    required: true,
-  },
-  itemPrice: {
-    type: Number,
-    required: true,
-  },
-  quantity: {
-    type: Number,
-    default: 1,
-  },
-  itemManufacturer: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-});
 
-// Define the model for the cart item
-const CartItem = mongoose.model('CartItem', cartItemSchema);
+
+
 
 // Middleware
 app.use(bodyParser.json());
 
 // Route for adding an item to the cart
-app.post('/cart', async (req, res) => {
-  try {
-    const { itemName, itemImage, itemPrice,itemManufacturer,email } = req.body;
-    const newItem = new CartItem({ itemName, itemImage, itemPrice,itemManufacturer,email });
-    await newItem.save();
-    res.status(200).json({ message: 'Item added to cart' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
-//fetch cart items
-app.get('/cartlist', async(req, res)=>{
-  try{
-    const cart = await CartItem.find({});
-    res.status(200).json(cart);
-
-  }
-  catch(error){
-    console.log(error);
-    res.status(500).json({error:'product not found'})
-  }
-})
-
-
-
-//get cart item by id
-app.get('/cartlist/:id', async(req, res) => {
-    try {
-        const {id} = req.params;
-        const cart = await CartItem.findById(id);
-        res.status(200).json(cart)
-        
-    } catch (error) {
-        res.status(500).json({message:error.message});
-        
-    }
-})
-
-//get cart item by user
-app.get('/cartlist/:id', async(req, res) => {
-    try {
-        const {id} = req.params;
-        const cart = await CartItem.findById(id);
-        res.status(200).json(cart)
-        
-    } catch (error) {
-        res.status(500).json({message:error.message});
-        
-    }
-})
-
-
-
-app.get('/cartuser/:email', async(req,res)=>{
-  try{
-    const {email} = req.params;
-
-    const cart = await CartItem.find({email});
-    if(!cart){
-      res.status(404).json({message:'you have not added any item to cart'});
-    }
-    res.status(200).json(cart);
-  }
-  catch(error){
-    res.status(500).json({message:error.message});
-
-  }
-  
-})
-
-//delete item from databse using its id
-app.delete('/delcart/:id', async(req, res) => {
-    try {
-        const {id} = req.params;
-        const cart = await CartItem.findByIdAndDelete(id);
-        if(!cart){
-            res.status(404).json({message:'cannot find this item'})
-        }
-        res.status(200).json({ message: 'Item deleted successfully' });
-        
-    } catch (error) {
-        res.status(500).json({message:error.message});
-        
-    }
-})
 
 
 
@@ -715,6 +687,19 @@ app.get('/productlistcategoryandseller/:sellername/:category', async (req, res) 
     res.status(500).json({ message: error.message });
   }
 });
+
+//get sellers
+app.get('/sellers', async(req, res)=>{
+  try{
+    const seller = await Shop.find({});
+    res.status(200).json(seller);
+
+  }
+  catch(error){
+    console.log(error);
+    res.status(500).json({error:'product not found'})
+  }
+})
 
 
 
