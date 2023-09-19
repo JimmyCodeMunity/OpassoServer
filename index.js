@@ -382,7 +382,7 @@ app.get('/productlist', async(req, res)=>{
   }
 })
 
-//fetch products by id
+
 //try to fetch a user by thier id
 app.get('/productlist/:id', async(req, res) => {
     try {
@@ -409,6 +409,21 @@ app.get('/productlist/:sellername', async(req, res) => {
         
     }
 })
+
+
+//fetch products by shopId
+app.get('/products/:shopId', async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    // Assuming you have a Product model with a 'shopId' field
+    const products = await Product.find({ shopId });
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 
 //fetch product by category
