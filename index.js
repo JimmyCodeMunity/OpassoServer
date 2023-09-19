@@ -370,7 +370,9 @@ app.post('/addproduct', async(req,res) =>{
 //fetch all products
 app.get('/productlist', async(req, res)=>{
   try{
-    const product = await Product.find({});
+    const product = await Product.find().sort({
+        createdAt: -1,
+      });
     res.status(200).json(product);
 
   }
