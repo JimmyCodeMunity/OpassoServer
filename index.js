@@ -515,8 +515,7 @@ app.get('/productlistsearch/:query', async (req, res) => {
     const products = await Product.find({
       $or: [
         { name: { $regex: query, $options: 'i' } }, // Search for name or letter in product name
-        { brand: { $regex: query, $options: 'i' } },
-        { shop.name: { $regex: query, $options: 'i' } },
+        { brand: { $regex: query, $options: 'i' } }
         { category: { $regex: query, $options: 'i' } }, // Search for name or letter in seller name
       ]
     });
