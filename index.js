@@ -130,8 +130,6 @@ const Brand = mongoose.model('Brand', brandSchema);
 
 
 
-
-//shop schema
 const shopSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -211,7 +209,8 @@ const shopSchema = new mongoose.Schema({
 });
 
 
-const Shop = mongoose.model('Shop', shopSchema);
+
+const Shop = mongoose.model("Shop", shopSchema);
 
 
 
@@ -221,7 +220,7 @@ app.use(bodyParser.json());
 
 
 app.get('/',(req,res)=>{
-  res.send('Vercel backend app creation')
+  res.send('Vercel backend app deployment succeeded')
 })
 
 app.post('/addbrand', async (req, res) => {
@@ -370,9 +369,7 @@ app.post('/addproduct', async(req,res) =>{
 //fetch all products
 app.get('/productlist', async(req, res)=>{
   try{
-    const product = await Product.find().sort({
-        createdAt: -1,
-      });
+    const product = await Product.find({});
     res.status(200).json(product);
 
   }
@@ -382,7 +379,7 @@ app.get('/productlist', async(req, res)=>{
   }
 })
 
-
+//fetch products by id
 //try to fetch a user by thier id
 app.get('/productlist/:id', async(req, res) => {
     try {
@@ -398,32 +395,21 @@ app.get('/productlist/:id', async(req, res) => {
 
 //fetch products by seller and name
 
-app.get('/productlist/:sellername', async(req, res) => {
-    try {
-        const {sellername} = req.params;
-        const product = await Product.findById(sellername);
-        res.status(200).json(product)
+// app.get('/productlist/:sellername', async(req, res) => {
+//     try {
+//         const {shop.name} = req.params;
+//         const product = await Product.findById(shop.name);
+//         res.status(200).json(product)
         
-    } catch (error) {
-        res.status(500).json({message:error.message});
+//     } catch (error) {
+//         res.status(500).json({message:error.message});
         
-    }
-})
+//     }
+// })
 
 
-//fetch products by shopId
-app.get('/products/:shopId', async (req, res) => {
-  try {
-    const { shopId } = req.params;
 
-    // Assuming you have a Product model with a 'shopId' field
-    const products = await Product.find({ shopId });
 
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
 
 //fetch product by category
@@ -507,7 +493,28 @@ app.get('/productlistcategoryandbrand/:brand/:category', async (req, res) => {
 
 
 
+//initiate a search
 
+app.get('/productlistsearch/:query', async (req, res) => {
+  try {
+    const { query } = req.params;
+    const products = await Product.find({
+      $or: [
+        { productname: { $regex: query, $options: 'i' } }, // Search for name or letter in product name
+        { sellername: { $regex: query, $options: 'i' } },
+        { location: { $regex: query, $options: 'i' } },
+        { category: { $regex: query, $options: 'i' } }, // Search for name or letter in seller name
+      ]
+    });
+    if (products.length === 0) {
+      res.status(404).json({ message: 'No products found' });
+    } else {
+      res.status(200).json(products);
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 
 
@@ -582,21 +589,19 @@ app.get('/userdata/:email', async(req,res)=>{
 
 
 
+// Middleware
+app.use(bodyParser.json());
+
+// Route for adding an item to the cart
 
 
-//get all sellers
-//fetch all products
-app.get('/sellers', async(req, res)=>{
-  try{
-    const seller = await Shop.find({});
-    res.status(200).json(seller);
 
-  }
-  catch(error){
-    console.log(error);
-    res.status(500).json({error:'product not found'})
-  }
-})
+
+
+
+
+
+
 
 
 
@@ -623,6 +628,43 @@ app.get('/productlistcategoryandseller/:sellername/:category', async (req, res) 
     res.status(500).json({ message: error.message });
   }
 });
+
+
+
+// load shop
+app.get(
+  "/getSeller",
+  isSeller,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const seller = await Shop.findById(req.seller._id);
+
+      if (!seller) {
+        return next(new ErrorHandler("User doesn't exists", 400));
+      }
+
+      res.status(200).json({
+        success: true,
+        seller,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+//fetch all products
+app.get('/getsellers', async(req, res)=>{
+  try{
+    const seller = await Shop.find({});
+    res.status(200).json(seller);
+
+  }
+  catch(error){
+    console.log(error);
+    res.status(500).json({error:'seller not found'})
+  }
+})
 
 
 
