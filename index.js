@@ -509,14 +509,16 @@ app.get('/productlistcategoryandbrand/:brand/:category', async (req, res) => {
 app.get('/productlistsearch/:query', async (req, res) => {
   try {
     const { query } = req.params;
+
     const products = await Product.find({
       $or: [
         { productname: { $regex: query, $options: 'i' } }, // Search for name or letter in product name
-        { sellername: { $regex: query, $options: 'i' } },
-        { location: { $regex: query, $options: 'i' } },
-        { category: { $regex: query, $options: 'i' } }, // Search for name or letter in seller name
-      ]
+        { sellername: { $regex: query, $options: 'i' } }, // Search for name or letter in seller name
+        { location: { $regex: query, $options: 'i' } }, // Search for name or letter in location
+        { category: { $regex: query, $options: 'i' } }, // Search for name or letter in category
+      ],
     });
+
     if (products.length === 0) {
       res.status(404).json({ message: 'No products found' });
     } else {
@@ -526,6 +528,7 @@ app.get('/productlistsearch/:query', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 
 
