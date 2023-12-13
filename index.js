@@ -215,6 +215,94 @@ const Shop = mongoose.model('Shop', shopSchema);
 
 
 
+
+//events schema
+const eventSchema = new mongoose.Schema({
+    
+    title:{
+        type: String,
+        required:[true,"Please enter your event title!"],
+    },
+
+    event_description: {
+        type: String,
+        required: [true, "Please enter your event description"],
+    },
+
+    name:{
+        type: String,
+        required:[true,"Please enter your event product name!"],
+    },
+    
+    description:{
+        type: String,
+        required:[true,"Please enter your event product description!"],
+    },
+    category:{
+        type: String,
+        required:[true,"Please enter your event product category!"],
+    },
+    start_Date: {
+        type: Date,
+        required: true,
+      },
+      Finish_Date: {
+        type: Date,
+        required: true,
+      },
+      status: {
+        type: String,
+        default: "Running",
+      },
+    tags:{
+        type: String,
+    },
+    originalPrice:{
+        type: Number,
+    },
+    discountPrice:{
+        type: Number,
+        required: [true,"Please enter your event product price!"],
+    },
+    stock:{
+        type: Number,
+        // required: [true,"Please enter your event product stock!"],
+    },
+    images:[
+        {
+            public_id: {
+                type: String,
+                required: true,
+              },
+              url: {
+                type: String,
+                required: true,
+              },
+        },
+    ],
+    shopId:{
+        type: String,
+        required: true,
+    },
+    shop:{
+        type: Object,
+        required: true,
+    },
+    sold_out:{
+        type: Number,
+        default: 0,
+    },
+    createdAt:{
+        type: Date,
+        default: Date.now(),
+    }
+});
+
+const Events = mongoose.model('Events', shopSchema);
+
+
+
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -379,6 +467,21 @@ app.get('/productlist', async(req, res)=>{
   catch(error){
     console.log(error);
     res.status(500).json({error:'product not found'})
+  }
+})
+
+//fetch all events
+app.get('/allevents', async(req, res)=>{
+  try{
+    const event = await Events.find().sort({
+        createdAt: -1,
+      });
+    res.status(200).json(event);
+
+  }
+  catch(error){
+    console.log(error);
+    res.status(500).json({error:'events not found'})
   }
 })
 
@@ -649,6 +752,9 @@ app.get('/productlistcategoryandseller/:sellername/:category', async (req, res) 
     res.status(500).json({ message: error.message });
   }
 });
+
+
+
 
 
 
