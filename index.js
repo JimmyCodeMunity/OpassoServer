@@ -5,7 +5,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
-DB_URL = "mongodb+srv://Collo:Collo77@cluster0.bo6bwv7.mongodb.net/test?retryWrites=true&w=majority"
+const DB_URL = "mongodb+srv://Collo:Collo77@cluster0.bo6bwv7.mongodb.net/test?retryWrites=true&w=majority"
+const port = 3000;
+
 
 
 
@@ -27,11 +29,14 @@ if(process.env.NODE_ENV !== 'production'){
 mongoose.set('strictQuery', true);
 
 
-// Start the server
-app.listen(5000, () => {
-  console.log('Server started on port 5000');
-  
+
+
+// Start the Express server
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
 });
+
+
 
 
 
