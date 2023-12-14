@@ -3,16 +3,35 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
+DB_URL = "mongodb+srv://Collo:Collo77@cluster0.bo6bwv7.mongodb.net/test?retryWrites=true&w=majority"
+
 
 
 // Initialize Express app
 const app = express();
 
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://Collo:Collo77@cluster0.bo6bwv7.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Failed to connect to MongoDB', err));
 
+if(process.env.NODE_ENV !== 'production'){
+  require("dotenv").config({
+    path:"./.env"
+  })
+}
+
+//strict query
+mongoose.set('strictQuery', true);
+
+
+// Start the server
+app.listen(process.env.PORT, () => {
+  console.log(`Server started on port ${process.env.PORT}`);
+  
+});
 
 
 
@@ -104,16 +123,75 @@ const productSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', productSchema);
 
 
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, "Please enter your shop name!"],
+  },
+  email: {
+    type: String,
+    required: [true, "Please enter your shop email address"],
+  },
+  password: {
+    type: String,
+    required: [true, "Please enter your password"],
+    minLength: [6, "Password should be greater than 6 characters"],
+    select: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  phoneNumber: {
+    type: Number,
+    required: true,
+  },
+  role: {
+    type: String,
+    default: "user",
+  },
+  status: {
+    type: String,
+    enum: ["Not approved", "Approved","On Hold", "Rejected"],
+    default: "Not approved",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
+   resetPasswordToken: String,
+   resetPasswordTime: Date,
+  });
+  
+  
+  //  Hash password
+  userSchema.pre("save", async function (next){
+    if(!this.isModified("password")){
+      next();
+    }
+  
+    this.password = await bcrypt.hash(this.password, 10);
+  });
+  
+  // jwt token
+  userSchema.methods.getJwtToken = function () {
+    return jwt.sign({ id: this._id}, JWT_SECRET_KEY,{
+      expiresIn: process.env.JWT_EXPIRES,
+    });
+  };
+  
+  // compare password
+  userSchema.methods.comparePassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+  };
+  
+  const User = mongoose.model('User', userSchema);
+
+
 //ebd product schema
 
-// Create User model
-const userSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  password: String
-});
 
-const User = mongoose.model('User', userSchema);
 
 
 // Create Brand model
@@ -635,31 +713,31 @@ app.get('/productlistsearch/:query', async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 // Login route
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email, password });
+    const user = await User.findOne({ email });
+
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      res.status(401).json({ error: 'Invalid password' });
+      return;
+    }
+
     res.status(200).json({ message: 'Login successful' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to login' });
   }
 });
+
+
 
 
 //fetch users
@@ -729,6 +807,7 @@ app.get('/sellers', async(req, res)=>{
 
 
 
+
 //search products by seller and category
 //search by brandname and category
 app.get('/productlistcategoryandseller/:sellername/:category', async (req, res) => {
@@ -761,7 +840,3 @@ app.get('/productlistcategoryandseller/:sellername/:category', async (req, res) 
 
 
 
-// Start the server
-app.listen(3000, () => {
-  console.log('Server started on port 3000');
-});
